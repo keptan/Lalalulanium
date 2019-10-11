@@ -17,13 +17,17 @@ auto outputPPM (void)
 	//operate over pixel positions
 	const auto rb = Integers(0, height - 1) 
 					| Product(Integers(0, width - 1)) 
-					| Map([](const auto tuple)
+					| Map([&](const auto tuple)
 					{
+					const auto distance =  [&](const auto x1, const auto y1, const auto x2, const auto y2) -> float
+					{
+							return std::sqrt(std::pow(y2 -y1, 2) + std::pow(x2 - x1, 2));
+					};
+						
 					const auto [x, y] = tuple;
-					const float r = ((float) x / (float) height);
-					const float g = ((float) y / (float) width);
-					const float b = ((std::sqrt(std::pow(y - width/2, 2) + std::pow(x - height/2, 2))) / 
-									std::sqrt( std::pow(height/2, 2) + std::pow(width/2, 2)));
+					const float r = x / float (height);
+					const float g = distance(x, y, 0, width) / distance(height, 0, 0, width);
+					const float b = 1 - (distance(x, y, 0, width) / distance(height, 0, 0, width));
 
 					const int ir = int(255.99 * r);
 					const int ig = int(255.99 * g);
