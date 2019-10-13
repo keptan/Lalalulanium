@@ -7,18 +7,20 @@
 #include <algorithm>
 #include <math.h>
 
-template<size_t, class T>
-using T0T_ = T;
 
-template<class T, size_t... Is>
-auto tGen(std::index_sequence<Is...>) { return std::tuple<T0T_<Is, T>...>{}; }
-
-template<class T, size_t N>
-auto tGen() { return tGen<T>(std::make_index_sequence<N>{}); }
 
 template<typename T, size_t N>
 struct TVec
 {
+	template<size_t, class I>
+	using T0T_ = I;
+
+	template<class I, size_t... Is>
+	static auto tGen(std::index_sequence<Is...>) { return std::tuple<T0T_<Is, I>...>{}; }
+
+	template<class I, size_t IN>
+	static auto tGen() { return tGen<I>(std::make_index_sequence<IN>{}); }
+
 	using Tuple = decltype(tGen<T, N>());
 	Tuple test; 
 	/*
