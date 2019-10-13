@@ -4,7 +4,43 @@
 #include "fun/tree.h"
 #include "fun/range.h" 
 #include <iostream>
+#include <algorithm>
+#include <math.h>
 
+template<size_t, class T>
+using T0T_ = T;
+
+template<class T, size_t... Is>
+auto tGen(std::index_sequence<Is...>) { return std::tuple<T0T_<Is, T>...>{}; }
+
+template<class T, size_t N>
+auto tGen() { return tGen<T>(std::make_index_sequence<N>{}); }
+
+template<typename T, size_t N>
+struct TVec
+{
+	using Tuple = decltype(tGen<T, N>());
+	Tuple test; 
+	/*
+	const vec& operator +(void) const {return *this;}
+	const vec  operator -(void) const 
+		{
+			std::array<float, length> out;
+
+			std::transform(e.begin(), e.end(), out.begin(), out.end(), 
+					[](const auto a){ return -a;});
+			return out;
+		}
+	float& operator [](int i) const {return e[i];}
+
+	vec& operator += (const vec& v2);
+	vec& operator -= (const vec& v2);
+	vec& operator *= (const vec& v2);
+	vec& operator /= (const vec& v2);
+	vec& operator *= (const c& v2);
+	vec& operator /= (const float t);
+	*/
+};
 
 auto outputPPM (void)
 {
@@ -40,8 +76,40 @@ auto outputPPM (void)
 	eval(rb);
 }
 
+auto imperativePPM (void)
+{
+	const int width = 200;
+	const int height = 100;
+
+	std::cout << "P3\n" << width << ' ' << height << "\n255\n";
+
+	for(int x = 0; x < width; x++)
+	{
+		for(int y = 0; y < width; y++)
+		{
+			const auto distance =  [&](const auto x1, const auto y1, const auto x2, const auto y2) -> float
+			{
+					return std::sqrt(std::pow(y2 -y1, 2) + std::pow(x2 - x1, 2));
+			};
+					const float r = x / float (height);
+					const float g = distance(x, y, 0, width) / distance(height, 0, 0, width);
+					const float b = 1 - (distance(x, y, 0, width) / distance(height, 0, 0, width));
+
+					const int ir = int(255.99 * r);
+					const int ig = int(255.99 * g);
+					const int ib = int(255.99 * b);
+
+					std::cout << ir << ' ' << ig << ' ' << ib << '\n';
+		}
+	}
+}
+
+
+
 
 int main (void)
 {
+//	imperativePPM();
 	outputPPM();
+	TVec<int, 3> {std::make_tuple(1, 2, 3)};
 }
