@@ -113,5 +113,5 @@ int main (void)
 {
 //	imperativePPM();
 	outputPPM();
-	TVec<int, 3> {std::make_tuple(1, 2, 3)};
+	TVec<int, 3> {};
 }
