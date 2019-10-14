@@ -4,6 +4,7 @@
 #include "fun/tree.h"
 #include "fun/range.h" 
 #include "tVector.h"
+#include "hits.h" 
 #include <iostream>
 #include <algorithm>
 #include <math.h>
@@ -13,7 +14,7 @@ auto outputPPM (void)
 {
 	//image header, size and depth 
 	const int width = 200;
-	const int height  = 100;
+	const int height  = 200;
 
 	std::cout << "P3\n" << width << ' ' << height << "\n255\n";
 
@@ -60,17 +61,33 @@ float sphereCollision (const Point& center, float radius, const Ray& r)
 
 Color background (const Ray& r) 
 {
-	float t = sphereCollision(Point(0, 0, -1), 0.5, r);
+	List<Sphere> objects = {
+	Sphere s (Point(0, 0, -1), 0.5); 
+	Sphere earth (Point(0, -100.5, -1), 100)};
 
-	if(t > 0.0) 
+	if(const auto hit = s.hit(r,0, 1000) )
 	{
-		Point normal = (r.point_at_t(t) - Point(0, 0, -1)).unitVector();
+		Point normal = hit->normal;
+		return 0.5 * Color(normal.x() + 1, normal.y()+1, normal.z()+1);
+	}
+;
+	if(const auto hit = earth.hit(r,0, 1000) )
+	{
+		Point normal = hit->normal;
 		return 0.5 * Color(normal.x() + 1, normal.y()+1, normal.z()+1);
 	}
 
 
+	/*
+	if(t > 0.0) 
+	{
+		Point normal = (r.point_at_t(t) - Point(0, 0, -1)).unitVector();
+	}
+	*/
+
+
 	Point unit_direction = r.direction().unitVector();
-	t = 0.5 * (unit_direction.y() + 1.0); 
+	float t = 0.5 * (unit_direction.y() + 1.0); 
 	return (1.0 - t) * Color(1.0, 1.0, 1.0) + t*Color(0.5, 0.7, 1.0);
 }
 
