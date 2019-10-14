@@ -5,10 +5,11 @@
 #include "fun/range.h" 
 #include "tVector.h"
 #include "hits.h" 
+#include "camera.h"
+#include <cmath>
 #include <iostream>
 #include <algorithm>
 #include <math.h>
-
 
 
 
@@ -27,22 +28,31 @@ float sphereCollision (const Point& center, float radius, const Ray& r)
 
 Color background (const Ray& r) 
 {
-	Sphere s (Point(0, 0, -1), 0.5); 
-	Sphere earth (Point(0, -100.5, -1), 100)};
+	std::vector<Sphere> spheres {
+	Sphere (Point(0, 0, -1), 0.5), 
+	Sphere (Point(-4, -1, -1), 2.5),
+	Sphere (Point(0, -100.5, -1), 100)};
 
-	if(const auto hit = s.hit(r,0, 1000) )
+	const auto worldHit = [&](const auto& r, const float tMin, const float tMax)
 	{
-		Point normal = hit->normal;
-		return 0.5 * Color(normal.x() + 1, normal.y()+1, normal.z()+1);
-	}
-;
-	if(const auto hit = earth.hit(r,0, 1000) )
+		std::optional<Hit> ghit; 
+		double closest = tMax;
+		for(const auto& s : spheres) 
+		{
+			if(const auto h = s.hit(r, tMin, closest))
+			{
+				ghit = *h; 
+				closest = h->t;
+			}
+		}
+		return ghit; 
+	};
+
+	if(const auto hit = worldHit(r,0, MAXFLOAT))
 	{
-		Point normal = hit->normal;
-		return 0.5 * Color(normal.x() + 1, normal.y()+1, normal.z()+1);
+		Point target = hit->p + hit->normal + random_unit(); 
+		return 0.5 * background(Ray(hit->p, target - hit->p));
 	}
-
-
 	/*
 	if(t > 0.0) 
 	{
@@ -61,12 +71,9 @@ auto cameraTest (void)
 	//image header, size and depth 
 	const int width = 200;
 	const int height  = 100;
-
 	std::cout << "P3\n" << width << ' ' << height << "\n255\n";
-	const Point lowerLeft (-2, -1, -1); 
-	const Point right		(4, 0, 0); 
-	const Point vertical  (0, 2, 0); 
-	const Point origin    (0, 0, 0);
+
+	Camera cam(Point(0, 0, 0)); 
 
 	//operate over pixel positions
 	const auto rb = Integers(height - 1 ,0) 
@@ -79,16 +86,24 @@ auto cameraTest (void)
 					};
 						
 					const auto [x, y] = tuple;
+					Color col(0, 0, 0); 
+					for(int s = 0; s < 100; s++)
+					{
+						const float v = x / float (height);
+						const float u = y / float (width);
+						const Ray r = cam.get_ray(u, v);
+						const Color c = background(r);
+						col =  col + c;
+					}
+					col = col / 100; 
 
-					const float v = x / float (height);
-					const float u = y / float (width);
-					const Ray r (origin, lowerLeft + u * right + v * vertical);
-					const Color c = background(r);
+					//GAMMA CORRECT!
+					col = Color(std::sqrt(col.r()),std::sqrt(col.g()),std::sqrt(col.b()));
+	
 
-
-					const int ir = int(255.99 * c.r());
-					const int ig = int(255.99 * c.g());
-					const int ib = int(255.99 * c.b());
+					const int ir = int(255.99 * col.r());
+					const int ig = int(255.99 * col.g());
+					const int ib = int(255.99 * col.b());
 
 					std::cout << ir << ' ' << ig << ' ' << ib << '\n';
 					});
