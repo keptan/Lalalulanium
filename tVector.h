@@ -1,8 +1,10 @@
+#pragma once 
 #include <cstddef>
 #include <tuple>
 #include <math.h>
 
 #include <utility>
+#include "utility.h"
 template<typename T, size_t N>
 class TVec
 {
@@ -174,6 +176,11 @@ class Color : public TVec<float, 3>
 	}
 };
 
+Color operator * (const float a, const Color& b)
+{
+	return b * a; 
+}
+
 class Point : public TVec<float, 3>
 { 
 	public:
@@ -204,6 +211,11 @@ class Point : public TVec<float, 3>
 	}
 };
 
+Point operator * (const float a, const Point& b)
+{
+	return b * a; 
+}
+
 class Ray 
 {
 	public: 
@@ -230,3 +242,16 @@ class Ray
 		return A + t * B;  
 	}
 };
+
+Point random_unit (void) 
+{
+	Point p;
+	do
+	{
+		p = 2.0 * Point(random_double(), random_double(), random_double()) - Point(1, 1, 1); 
+	} while(p.length() * p.length() >= 1.0); 
+
+	return p;  
+}
+
+
