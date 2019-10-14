@@ -71,9 +71,10 @@ auto cameraTest (void)
 	//image header, size and depth 
 	const int width = 200;
 	const int height  = 100;
+	const int samples = 500;
 	std::cout << "P3\n" << width << ' ' << height << "\n255\n";
 
-	Camera cam(Point(0, 0, 0)); 
+	const Camera cam(Point(0, 0, 0)); 
 
 	//operate over pixel positions
 	const auto rb = Integers(height - 1 ,0) 
@@ -81,7 +82,7 @@ auto cameraTest (void)
 					| Map([&](const auto tuple)
 					{
 					const auto [x, y] = tuple;
-					const Color color =  (Integers() | Take(100) | Fold([&](const auto s, const auto c)
+					const Color color =  (Integers() | Take(samples) | Fold([&](const auto s, const auto c)
 					{
 						const float v = x / float (height);
 						const float u = y / float (width);
@@ -93,7 +94,7 @@ auto cameraTest (void)
 
 
 				//average 
-					const Color average = color / 100; 
+					const Color average = color / samples; 
 					const auto gammaCorrected = Color(std::sqrt(average.r()),std::sqrt(average.g()),std::sqrt(average.b()));
 
 					const int ir = int(255.99 * gammaCorrected.r());
