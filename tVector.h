@@ -3,7 +3,7 @@
 
 #include <utility>
 template<typename T, size_t N>
-struct TVec
+class TVec
 {
 
 	template<size_t, class I>
@@ -17,15 +17,18 @@ struct TVec
 
 	using Tuple = decltype(tGen<T, N>());
 	using Index = std::make_index_sequence<N>;
-	
-	Tuple res; 
-
 
 	template<typename F, std::size_t... I>
 	constexpr Tuple elementWise (const Tuple& a, const Tuple& b, F f, std::index_sequence<I...> = Index{}) const
 	{
 		return std::make_tuple( f(std::get<I>(a),std::get<I>(b))... );
 	}
+
+
+	public:
+	
+	Tuple res; 
+
 
 
 	const TVec& operator+(void) const 
@@ -135,4 +138,50 @@ struct TVec
 			static_assert(N == 3, "cross only defined for 3d vectors");
 	}
 
+};
+
+class Color : public TVec<float, 3>
+{ 
+	public:
+	Color (float r, float g, float b)
+		: TVec{std::make_tuple(r, g, b)}
+	{}
+
+	float r (void) const
+	{
+		return std::get<0>(this->res);
+	}
+
+	float g (void) const
+	{
+		return std::get<1>(this->res);
+	}
+
+	float b (void) const
+	{
+		return std::get<2>(this->res);
+	}
+};
+
+class Point : public TVec<float, 3>
+{ 
+	public:
+	Point (float x, float y, float z)
+		: TVec{std::make_tuple(x, y, z)}
+	{}
+
+	float x (void) 
+	{
+		return std::get<0>(this->res);
+	}
+
+	float y (void) 
+	{
+		return std::get<1>(this->res);
+	}
+
+	float z (void) 
+	{
+		return std::get<2>(this->res);
+	}
 };
