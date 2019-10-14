@@ -80,30 +80,25 @@ auto cameraTest (void)
 					| Product(Integers(0, width - 1)) 
 					| Map([&](const auto tuple)
 					{
-					const auto distance =  [&](const auto x1, const auto y1, const auto x2, const auto y2) -> float
-					{
-							return std::sqrt(std::pow(y2 -y1, 2) + std::pow(x2 - x1, 2));
-					};
-						
 					const auto [x, y] = tuple;
-					Color col(0, 0, 0); 
-					for(int s = 0; s < 100; s++)
+					const Color color =  (Integers() | Take(100) | Fold([&](const auto s, const auto c)
 					{
 						const float v = x / float (height);
 						const float u = y / float (width);
 						const Ray r = cam.get_ray(u, v);
-						const Color c = background(r);
-						col =  col + c;
-					}
-					col = col / 100; 
+						const Color found = background(r);
 
-					//GAMMA CORRECT!
-					col = Color(std::sqrt(col.r()),std::sqrt(col.g()),std::sqrt(col.b()));
-	
+						return c + found; 
+					}, Color(0, 0, 0))).eval();
 
-					const int ir = int(255.99 * col.r());
-					const int ig = int(255.99 * col.g());
-					const int ib = int(255.99 * col.b());
+
+				//average 
+					const Color average = color / 100; 
+					const auto gammaCorrected = Color(std::sqrt(average.r()),std::sqrt(average.g()),std::sqrt(average.b()));
+
+					const int ir = int(255.99 * gammaCorrected.r());
+					const int ig = int(255.99 * gammaCorrected.g());
+					const int ib = int(255.99 * gammaCorrected.b());
 
 					std::cout << ir << ' ' << ig << ' ' << ib << '\n';
 					});
