@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <tuple>
 #include <math.h>
 
@@ -100,7 +101,7 @@ class TVec
 
 		T k = 1.0 / std::sqrt(acc);
 
-		const auto mK = [&](const auto& a){ a *= k;};
+		const auto mK = [&](auto& a){ a *= k;};
 		std::apply([&](auto&&... args) {(mK(args), ...);}, out);
 
 		return TVec{out};
@@ -140,11 +141,21 @@ class TVec
 
 };
 
+template<typename T, size_t N>
+TVec<T, N> operator * (const float a, const TVec<T, N>& b)
+{
+	return b * a; 
+}
+
 class Color : public TVec<float, 3>
 { 
 	public:
 	Color (float r, float g, float b)
 		: TVec{std::make_tuple(r, g, b)}
+	{}
+
+	Color (const TVec& v)
+		: TVec(v)
 	{}
 
 	float r (void) const
@@ -168,6 +179,13 @@ class Point : public TVec<float, 3>
 	public:
 	Point (float x, float y, float z)
 		: TVec{std::make_tuple(x, y, z)}
+	{}
+
+	Point (const TVec& v)
+		: TVec(v)
+	{}
+
+	Point (void) 
 	{}
 
 	float x (void) 
