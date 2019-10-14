@@ -45,7 +45,7 @@ auto outputPPM (void)
 
 
 
-bool sphereCollision (const Point& center, float radius, const Ray& r)
+float sphereCollision (const Point& center, float radius, const Ray& r)
 {
 	Point oc = r.origin() - center; 
 	float a = r.direction().dot(r.direction()); 
@@ -53,15 +53,24 @@ bool sphereCollision (const Point& center, float radius, const Ray& r)
 	float c = oc.dot(oc) - radius * radius; 
 	float disc = b*b - 4*a*c;
 
-	return disc > 0; 
+	if(disc < 0) return -1.0;
+
+	return (-b - std::sqrt(disc)) / (2.0 * a);
 }
 
 Color background (const Ray& r) 
 {
-	if( sphereCollision(Point(0, 0, -1), 0.5, r)) return Color(1, 0, 0);
+	float t = sphereCollision(Point(0, 0, -1), 0.5, r);
+
+	if(t > 0.0) 
+	{
+		Point normal = (r.point_at_t(t) - Point(0, 0, -1)).unitVector();
+		return 0.5 * Color(normal.x() + 1, normal.y()+1, normal.z()+1);
+	}
+
 
 	Point unit_direction = r.direction().unitVector();
-	float t = 0.5 * (unit_direction.y() + 1.0); 
+	t = 0.5 * (unit_direction.y() + 1.0); 
 	return (1.0 - t) * Color(1.0, 1.0, 1.0) + t*Color(0.5, 0.7, 1.0);
 }
 
@@ -78,7 +87,7 @@ auto cameraTest (void)
 	const Point origin    (0, 0, 0);
 
 	//operate over pixel positions
-	const auto rb = Integers(0, height - 1) 
+	const auto rb = Integers(height - 1 ,0) 
 					| Product(Integers(0, width - 1)) 
 					| Map([&](const auto tuple)
 					{
