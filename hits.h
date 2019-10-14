@@ -58,6 +58,55 @@ class Sphere : public Hittable
 		}
 };
 
+class Triangle : public Hittable 
+{
+
+	public:  
+		Point a, b, c;  
+
+		Triangle (void) 
+		{}
+
+		Triangle(const Point a, const Point b, const Point c) 
+			: a(a), b(b), c(c) 
+		{}
+
+		virtual std::optional<Hit> hit 
+		(const Ray& r, float t_min, float t_max) const final 
+		{
+			const float EPSILON = 0.0000001;
+			const auto edge1 = b - a; 
+			const auto edge2 = c - a; 
+			const auto h = r.direction().cross(edge2); 
+			const auto a_ = edge1.dot(h); 
+
+			if (a_ > -EPSILON && a_ < EPSILON) return std::nullopt; 
+
+			const float f = 1/a_; 
+			const Point  s = r.origin() - a; 
+			const float u = f * s.dot(h); 
+
+			if( u < 0.0 || u > 1.0) return std::nullopt; 
+
+			const auto q = s.cross(edge1); 
+			const auto v = f * r.direction().dot(q); 
+
+			if( v < 0.0 || u + v > 1.0) return std::nullopt; 
+
+			float t = f * edge2.dot(q); 
+			if( t > t_min && t < t_max) 
+			{
+				return Hit {t, r.point_at_t(t), edge1.cross(edge2)};
+			}
+
+			return std::nullopt; 
+		}
+};
+
+
+
+
+
 
 
 
