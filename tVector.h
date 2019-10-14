@@ -22,7 +22,7 @@ struct TVec
 
 
 	template<typename F, std::size_t... I>
-	constexpr Tuple elementWise (const Tuple& a, const Tuple& b, F f, std::index_sequence<I...> = Index{})
+	constexpr Tuple elementWise (const Tuple& a, const Tuple& b, F f, std::index_sequence<I...> = Index{}) const
 	{
 		return std::make_tuple( f(std::get<I>(a),std::get<I>(b))... );
 	}
@@ -43,13 +43,96 @@ struct TVec
 		return TVec{out};
 	}
 
-	T  operator [] (const int i) const {return std::get<i>(res);}
+	//T  operator [] (const int i) const {return std::get<i>(res);}
 	//T& operator [] (const int i) {return std::get<i>(res);}
 
-	TVec operator + (const TVec& b)
+	TVec operator + (const TVec& b) const
 	{
-		const auto add = [](const auto a, const auto b){ return a + b;};
-		Tuple out = elementWise(res, b.res, add, Index{});
+		return  TVec{elementWise(res, b.res, [](const auto a, const auto b){return a + b;}, Index{})};
+	}
+
+	TVec operator - (const TVec& b) const
+	{
+		return  TVec{elementWise(res, b.res, [](const auto a, const auto b){return a - b;}, Index{})};
+	}
+
+	TVec operator * (const TVec& b) const
+	{
+		return  TVec{elementWise(res, b.res, [](const auto a, const auto b){return a * b;}, Index{})};
+	}
+
+	TVec operator / (const TVec& b) const
+	{
+		return  TVec{elementWise(res, b.res, [](const auto a, const auto b){return a / b;}, Index{})};
+	}
+
+	TVec operator * (const T& b) const
+	{
+		Tuple out = res;
+		const auto minus = [&](auto& a){ a = a * b;};
+
+		//apply minus lambda to all tuple members...
+		std::apply([&](auto&&... args) {(minus(args) , ...);}, out);
 		return TVec{out};
 	}
+
+	TVec operator / (const T& b) const
+	{
+		Tuple out = res;
+		const auto minus = [&](auto& a){ a = a / b;};
+
+		//apply minus lambda to all tuple members...
+		std::apply([&](auto&&... args) {(minus(args) , ...);}, out);
+		return TVec{out};
+	}
+
+	TVec unitVector (void) const
+	{
+		Tuple out = res;
+		T acc = 0;
+		const auto accSqr = [&](const auto& a){ acc += a * a;};
+		std::apply([&](auto&&... args) {(accSqr(args) , ...);}, out);
+
+		//std::cout << acc << std::endl;
+
+		T k = 1.0 / std::sqrt(acc);
+
+		const auto mK = [&](const auto& a){ a *= k;};
+		std::apply([&](auto&&... args) {(mK(args), ...);}, out);
+
+		return TVec{out};
+	}
+
+	T dot (const TVec& b) const 
+	{
+		TVec acc = *this * b;  
+		T s = 0;
+		const auto sum = [&](const auto& a){ s += a;};
+		std::apply([&](auto&&... args) {(sum(args) , ...);}, acc.res);
+
+		return s; 
+	}
+
+	T length (void) const 
+	{
+		Tuple out = res;
+		T acc = 0;
+		const auto accSqr = [&](const auto& a){ acc += a * a;};
+		std::apply([&](auto&&... args) {(accSqr(args) , ...);}, out);
+		return  std::sqrt(acc);
+	}
+
+	TVec cross (const TVec& b) const 
+	{
+		if constexpr(N == 3)
+		{  
+			return TVec{ std::make_tuple( 
+						std::get<1>(res) * std::get<2>(b.res) - std::get<2>(res) * std::get<1>(b.res), 
+						std::get<2>(res) * std::get<0>(b.res) - std::get<0>(res) * std::get<2>(b.res), 
+						std::get<0>(res) * std::get<1>(b.res) - std::get<1>(res) * std::get<0>(b.res))};
+		}
+		else 
+			static_assert(N == 3, "cross only defined for 3d vectors");
+	}
+
 };
