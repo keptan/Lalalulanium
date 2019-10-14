@@ -7,6 +7,8 @@ class Scene
 	public:
 	std::vector<std::unique_ptr<Hittable>> actors; 
 
+	//tests if a ray hits anything in the scene between tMin and tMax travel distance 
+	//returns 
 	std::optional<Hit> shoot (const Ray& r, const float tMin, const float tMax) const
 	{
 		std::optional<Hit> hit; 
@@ -23,9 +25,10 @@ class Scene
 		return hit; 
 	}
 
+	//bounches rays around the scene until it returns a color 
 	Color sample (const Ray& r) const
 	{
-		if(const auto hit = shoot(r, 0, MAXFLOAT))
+		if(const auto hit = shoot(r, 0.001, MAXFLOAT))
 		{
 			Point target = hit->p + hit->normal + random_unit(); 
 			return 0.5 * sample(Ray(hit->p, target - hit->p)); 
