@@ -185,3 +185,30 @@ class Point : public TVec<float, 3>
 		return std::get<2>(this->res);
 	}
 };
+
+class Ray 
+{
+	public: 
+	const Point A; 
+	const Point B; 
+
+	Ray (void) {}; 
+	Ray (const Point& a, const Point& b)
+		: A(a), B(b)
+	{}
+
+	Point origin (void) const 
+	{
+		return A; 
+	}
+
+	Point direction (void) const 
+	{
+		return B;  
+	}
+
+	Point point_at_t (float t) const 
+	{
+		return A + t * B;  
+	}
+};
