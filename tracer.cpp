@@ -6,11 +6,13 @@
 #include "tVector.h"
 #include "hits.h" 
 #include "camera.h"
+#include "scene.h" 
 #include <cmath>
 #include <iostream>
 #include <algorithm>
 #include <math.h>
 
+#include <memory>
 
 
 float sphereCollision (const Point& center, float radius, const Ray& r)
@@ -26,44 +28,21 @@ float sphereCollision (const Point& center, float radius, const Ray& r)
 	return (-b - std::sqrt(disc)) / (2.0 * a);
 }
 
-Color background (const Ray& r) 
+Color sample (const Ray& r) 
 {
-	std::vector<Sphere> spheres {
-	Sphere (Point(0, 0, -1), 0.5), 
-	Sphere (Point(-4, -1, -1), 2.5),
-	Sphere (Point(0, -100.5, -1), 100)};
+	Scene scene; 
+	scene.actors.emplace_back( std::make_unique<Sphere>(Point(-1, 0, -1), 0.5));
+	//scene.actors.emplace_back( std::make_unique<Sphere>(Point(1, 0, -1), 0.5));
+	//scene.actors.emplace_back( std::make_unique<Sphere>(Point(1, 1, -1), 0.5));
+	scene.actors.emplace_back( std::make_unique<Sphere>(Point(0, -100.5, -1), 100));
+	scene.actors.emplace_back( std::make_unique<Triangle>(
+				Point(0.5, 0.0, -2),
+				Point(-0.5, 0.0, -2),
+				Point(1.0, 1.0, -1.5)
 
-	const auto worldHit = [&](const auto& r, const float tMin, const float tMax)
-	{
-		std::optional<Hit> ghit; 
-		double closest = tMax;
-		for(const auto& s : spheres) 
-		{
-			if(const auto h = s.hit(r, tMin, closest))
-			{
-				ghit = *h; 
-				closest = h->t;
-			}
-		}
-		return ghit; 
-	};
+				));
 
-	if(const auto hit = worldHit(r,0, MAXFLOAT))
-	{
-		Point target = hit->p + hit->normal + random_unit(); 
-		return 0.5 * background(Ray(hit->p, target - hit->p));
-	}
-	/*
-	if(t > 0.0) 
-	{
-		Point normal = (r.point_at_t(t) - Point(0, 0, -1)).unitVector();
-	}
-	*/
-
-
-	Point unit_direction = r.direction().unitVector();
-	float t = 0.5 * (unit_direction.y() + 1.0); 
-	return (1.0 - t) * Color(1.0, 1.0, 1.0) + t*Color(0.5, 0.7, 1.0);
+	return scene.sample(r);
 }
 
 auto cameraTest (void)
@@ -73,6 +52,7 @@ auto cameraTest (void)
 	const int height  = 100;
 	const int samples = 500;
 	std::cout << "P3\n" << width << ' ' << height << "\n255\n";
+
 
 	const Camera cam(Point(0, 0, 0)); 
 
@@ -87,7 +67,7 @@ auto cameraTest (void)
 						const float v = x / float (height);
 						const float u = y / float (width);
 						const Ray r = cam.get_ray(u, v);
-						const Color found = background(r);
+						const Color found = sample(r);
 
 						return c + found; 
 					}, Color(0, 0, 0))).eval();
