@@ -195,17 +195,17 @@ class Point : public TVec<float, 3>
 	Point (void) 
 	{}
 
-	float x (void) 
+	float x (void) const
 	{
 		return std::get<0>(this->res);
 	}
 
-	float y (void) 
+	float y (void) const
 	{
 		return std::get<1>(this->res);
 	}
 
-	float z (void) 
+	float z (void) const
 	{
 		return std::get<2>(this->res);
 	}
