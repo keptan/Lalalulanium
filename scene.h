@@ -31,8 +31,12 @@ class Scene
 		const auto hit = shoot(r, 0.001, MAXFLOAT);
 		if(depth < 25 && hit)
 		{
-			Point target = hit->p + hit->normal + random_unit(); 
-			return 0.5 * sample(Ray(hit->p, target - hit->p), depth + 1); 
+			const auto scatter = hit->mat->scatter(r, *hit);
+			if(!scatter) return Color(0, 0, 0);
+
+			const auto [scattered, attenuation] = *scatter;
+
+			return attenuation * sample(scattered, depth + 1);
 		}
 
 		Point unit_direction = r.direction().unitVector(); 
