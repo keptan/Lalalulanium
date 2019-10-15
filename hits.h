@@ -198,7 +198,7 @@ class Sculpture : public Hittable
 				}
 			}
 
-			return std::nullopt;
+			return hit;
 		}
 };
 
