@@ -8,7 +8,9 @@
 #include "hits.h" 
 #include "camera.h"
 #include "scene.h" 
+#include "nfun/future_pool.h" 
 #include <cmath>
+#include <future>
 #include <iostream>
 #include <algorithm>
 #include <math.h>
@@ -141,6 +143,7 @@ std::vector<std::tuple<std::tuple<int, int>, Color>> scanBatch (const Scene& sce
 
 	const int samples = 500;
 
+
 	const auto rb = Integers(hEnd - 1 ,height) 
 					| Product(Integers(width, wEnd - 1)) 
 					| Map([&](const auto tuple)
@@ -184,26 +187,30 @@ auto cameraBatch (const Scene& scene)
 	int rowsLeft = height; 
 	int batchNum = 0;
 
-	std::vector<std::vector<std::tuple<std::tuple<int, int>, Color>>> acc((height / rowsPer) + 1);
+
+	FutureDad manDad(8);
+
+	std::vector<std::future<std::vector<std::tuple<std::tuple<int, int>, Color>>>> acc((height / rowsPer) + 1);
 	while(rowsLeft - rowsPer > 0)
 	{
-		std::cerr << rowsLeft << ' ' << "Rows Left..." << std::endl;
 		std::cerr << "batch#:"  << ' ' << batchNum  << std::endl;
-		acc[batchNum] = scanBatch(scene, cam, {rowsLeft - rowsPer, 0}, {rowsLeft, width}, {height, width});
+
+		acc[batchNum] = manDad.addTask([&](){return scanBatch(scene, cam, {rowsLeft - rowsPer, 0}, {rowsLeft, width}, {height, width});});
 		rowsLeft = rowsLeft - rowsPer; 
 		batchNum++;
 	}
 	if(rowsLeft > 0)
 	{
 		std::cerr << 1 << ' ' << "Rows Left..." << std::endl;
-		acc[batchNum] = scanBatch(scene, cam, {0, 0}, {rowsLeft, width}, {height, width});
+		acc[batchNum] = manDad.addTask([&](){return scanBatch(scene, cam, {0, 0}, {rowsLeft, width}, {height, width});});
 	}
 
 	std::cout << "P3\n" << width << ' ' << height << "\n255\n";
 
-	for(const auto v : acc)
+	for( auto& v : acc)
 	{
-		for(const auto t : v) 
+		v.wait();
+		for(auto& t : v.get()) 
 		{
 			const auto [p, gammaCorrected] = t; 
 			const auto [x, y] = p; 
