@@ -187,10 +187,15 @@ class Sculpture : public Hittable
 		{
 			if(! hitBound(r, t_min, t_max)) return std::nullopt; 
 
-			for(const auto& t : triangles)
+			std::optional<Hit> hit; 
+			double closest = t_max; 
+			for(const auto& a : triangles)
 			{
-				const auto hit = t.hit(r, t_min, t_max); 
-				if(hit) return hit; 
+				if(const auto h = a.hit(r, t_min, closest))
+				{
+					hit = *h;
+					closest = h->t; 
+				}
 			}
 
 			return std::nullopt;
