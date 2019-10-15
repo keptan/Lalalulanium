@@ -26,12 +26,13 @@ class Scene
 	}
 
 	//bounches rays around the scene until it returns a color 
-	Color sample (const Ray& r) const
+	Color sample (const Ray& r, int depth = 0) const
 	{
-		if(const auto hit = shoot(r, 0.001, MAXFLOAT))
+		const auto hit = shoot(r, 0.001, MAXFLOAT);
+		if(depth < 50 && hit)
 		{
 			Point target = hit->p + hit->normal + random_unit(); 
-			return 0.5 * sample(Ray(hit->p, target - hit->p)); 
+			return 0.5 * sample(Ray(hit->p, target - hit->p), depth + 1); 
 		}
 
 		Point unit_direction = r.direction().unitVector(); 
