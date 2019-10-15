@@ -120,18 +120,19 @@ class Sculpture : public Hittable
 		{
 			if(!triangles.size()) return; 
 
-			int minx = triangles[0].a.x(); 
-			int miny = triangles[0].a.y(); 
-			int minz = triangles[0].a.z(); 
+			float minx = triangles[0].a.x(); 
+			float miny = triangles[0].a.y(); 
+			float minz = triangles[0].a.z(); 
 
-			int maxx = triangles[0].a.x(); 
-			int maxy = triangles[0].a.y(); 
-			int maxz = triangles[0].a.z(); 
+			float maxx = triangles[0].a.x(); 
+			float maxy = triangles[0].a.y(); 
+			float maxz = triangles[0].a.z(); 
 
 			for(const auto& t : triangles)
 			{
 				const auto test = [&](const auto ti)
 				{
+					std::cerr << ti.x() << std::endl;
 					if(ti.x() > maxx) maxx = ti.x();
 					if(ti.y() > maxy) maxy = ti.y();
 					if(ti.z() > maxz) maxz = ti.z();
@@ -146,6 +147,9 @@ class Sculpture : public Hittable
 				test(t.b);
 				test(t.c);
 			}
+			
+			std::cerr << minx << ' ' << miny << ' ' << minz << std::endl;
+			std::cerr << maxx << ' ' << maxy << ' ' << maxz << std::endl;
 
 			a = Point(minx, miny, minz); 
 			b = Point(maxx, maxy, maxz);
@@ -155,8 +159,8 @@ class Sculpture : public Hittable
 		bool hitBound
 		(const Ray& r, float tmin, float tmax) const
 		{
-			const float dir[] =    {std::get<0>(r.direction().res), std::get<1>(r.direction().res),std::get<1>(r.direction().res)};
-			const float origin[] = {std::get<0>(r.origin().res), std::get<1>(r.origin().res),std::get<1>(r.origin().res)};
+			const float dir[] =    {std::get<0>(r.direction().res), std::get<1>(r.direction().res),std::get<2>(r.direction().res)};
+			const float origin[] = {std::get<0>(r.origin().res), std::get<1>(r.origin().res),std::get<2>(r.origin().res)};
 
 			const float min[] = {std::get<0>(a.res), std::get<1>(a.res), std::get<2>(a.res)};
 			const float max[] = {std::get<0>(b.res), std::get<1>(b.res), std::get<2>(b.res)};
@@ -181,7 +185,7 @@ class Sculpture : public Hittable
 		virtual std::optional<Hit> hit 
 		(const Ray& r, float t_min, float t_max) const final
 		{
-			if(hitBound(r, t_min, t_max)) return std::nullopt; 
+			if(! hitBound(r, t_min, t_max)) return std::nullopt; 
 
 			for(const auto& t : triangles)
 			{
