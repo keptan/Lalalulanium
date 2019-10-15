@@ -5,6 +5,7 @@
 #include "fun/tree.h"
 #include "fun/range.h" 
 #include "tVector.h"
+#include "materials.h"
 #include "hits.h" 
 #include "camera.h"
 #include "scene.h" 
@@ -69,6 +70,34 @@ std::vector<Triangle> generateTriangles (const std::string v, const std::string&
 	const auto verts = generateVerts(v);
 	std::vector<Triangle> acc; 
 	std::ifstream infile(t); 
+	std::shared_ptr<Material> green = std::make_shared<Lambertian>(Color(0, 0.5, 0));
+
+	while(infile)
+	{
+		std::string s; 
+		if(!getline(infile, s)) break; 
+
+		std::istringstream ss (s); 
+		std::vector<std::string> record; 
+		while(ss) 
+		{
+			std::string s; 
+			if(!getline(ss, s, ',')) break; 
+			record.push_back(s); 
+		}
+
+		acc.emplace_back(verts[std::stoi(record[0])],verts[std::stoi(record[1])],verts[std::stoi(record[2])], green);
+	}
+
+	return acc;
+}
+
+/*
+std::vector<std::unique_ptr<Hittable>> generateTrianglesPtr (const std::string v, const std::string& t)
+{
+	const auto verts = generateVerts(v);
+	std::vector<std::unique_ptr<Hittable>> acc; 
+	std::ifstream infile(t); 
 
 
 	while(infile)
@@ -85,11 +114,12 @@ std::vector<Triangle> generateTriangles (const std::string v, const std::string&
 			record.push_back(s); 
 		}
 
-		acc.emplace_back(verts[std::stoi(record[0])],verts[std::stoi(record[1])],verts[std::stoi(record[2])]);
+		acc.emplace_back(std::make_unique<Triangle>(verts[std::stoi(record[0])],verts[std::stoi(record[1])],verts[std::stoi(record[2])]));
 	}
 
 	return acc;
 }
+*/
 
 auto cameraTest (const Scene& scene)
 {
@@ -177,8 +207,9 @@ std::vector<std::tuple<std::tuple<int, int>, Color>> scanBatch (const Scene& sce
 
 auto cameraBatch (const Scene& scene) 
 {
-	const int height = 100; 
-	const int width  = 200;
+
+	const int width  = 640;
+	const int height = 480; 
 	const int samples = 500; 
 	const Camera cam(Point(0, 0, 0));
 
@@ -238,12 +269,17 @@ auto cameraBatch (const Scene& scene)
 
 int main (void)
 {
+
+	std::shared_ptr<Material> red = std::make_shared<Lambertian>(Color(1.0, 0.5, 0.5));
+	std::shared_ptr<Material> green = std::make_shared<Lambertian>(Color(0.52, 1.0, 0.5));
+	std::shared_ptr<Material> gray = std::make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
 //	imperativePPM();
 //	outputPPM();
 	Scene scene; 
 	scene.actors.emplace_back(std::make_unique<Sculpture>(generateTriangles("verts.v", "triangles.v")));
-	scene.actors.emplace_back(std::make_unique<Sphere>(Point(0, -100.5, -1), 100));
-	scene.actors.emplace_back(std::make_unique<Sphere>(Point(-2, 0, -1), 0.5));
+//	scene.actors = generateTrianglesPtr("verts.v", "triangles.v");
+	scene.actors.emplace_back(std::make_unique<Sphere>(Point(0, -100.5, -1), 100, gray));
+	scene.actors.emplace_back(std::make_unique<Sphere>(Point(-2, 0, -1), 0.5, red));
 	//scene.actors.emplace_back(std::make_unique<Sphere>(Point(0, 0, -1), 0.5));
 
 //cameraTest(scene);
