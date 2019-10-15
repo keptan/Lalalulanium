@@ -29,7 +29,7 @@ class Scene
 	Color sample (const Ray& r, int depth = 0) const
 	{
 		const auto hit = shoot(r, 0.001, MAXFLOAT);
-		if(depth < 50 && hit)
+		if(depth < 25 && hit)
 		{
 			Point target = hit->p + hit->normal + random_unit(); 
 			return 0.5 * sample(Ray(hit->p, target - hit->p), depth + 1); 
