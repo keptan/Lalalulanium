@@ -177,12 +177,13 @@ std::vector<std::tuple<std::tuple<int, int>, Color>> scanBatch (const Scene& sce
 
 auto cameraBatch (const Scene& scene) 
 {
-	const int height = 200; 
-	const int width  = 400;
+	const int height = 100; 
+	const int width  = 200;
 	const int samples = 500; 
 	const Camera cam(Point(0, 0, 0));
 
-	const int rowsPer = height / ((height * width) / 10000);
+	const int rowsPer = std::min(height / 8, (height / ((height * width) / 10000)));
+	std::cerr << rowsPer << std::endl;
 
 	int rowsLeft = height; 
 	int batchNum = 0;
@@ -190,12 +191,20 @@ auto cameraBatch (const Scene& scene)
 
 	FutureDad manDad(8);
 
-	std::vector<std::future<std::vector<std::tuple<std::tuple<int, int>, Color>>>> acc((height / rowsPer) + 1);
+	std::vector<std::future<std::vector<std::tuple<std::tuple<int, int>, Color>>>> acc((height / rowsPer + 1));
 	while(rowsLeft - rowsPer > 0)
 	{
 		std::cerr << "batch#:"  << ' ' << batchNum  << std::endl;
 
-		acc[batchNum] = manDad.addTask([&](){return scanBatch(scene, cam, {rowsLeft - rowsPer, 0}, {rowsLeft, width}, {height, width});});
+		const auto run = ([=, &scene, &cam]()
+				{
+					const auto out = scanBatch(scene, cam, {rowsLeft - rowsPer, 0}, {rowsLeft, width}, {height, width});
+					std::cerr << " finished batch!" << std::endl;
+
+					return out;
+				});
+
+		acc[batchNum] = manDad.addTask(run);
 		rowsLeft = rowsLeft - rowsPer; 
 		batchNum++;
 	}
@@ -232,9 +241,10 @@ int main (void)
 //	imperativePPM();
 //	outputPPM();
 	Scene scene; 
-	scene.actors = generateTriangles("/tmp/verts.v", "/tmp/triangles.v");
+	scene.actors = generateTriangles("verts.v", "triangles.v");
 	scene.actors.emplace_back(std::make_unique<Sphere>(Point(0, -100.5, -1), 100));
-	scene.actors.emplace_back(std::make_unique<Sphere>(Point(-4, -1, -1), 2));
+	scene.actors.emplace_back(std::make_unique<Sphere>(Point(-2, 0, -1), 0.5));
+	//scene.actors.emplace_back(std::make_unique<Sphere>(Point(0, 0, -1), 0.5));
 
 //cameraTest(scene);
 cameraBatch(scene);
