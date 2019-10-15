@@ -174,8 +174,8 @@ std::vector<std::tuple<std::tuple<int, int>, Color>> scanBatch (const Scene& sce
 
 auto cameraBatch (const Scene& scene) 
 {
-	const int height = 480; 
-	const int width  = 640;
+	const int height = 200; 
+	const int width  = 400;
 	const int samples = 500; 
 	const Camera cam(Point(0, 0, 0));
 
@@ -187,12 +187,15 @@ auto cameraBatch (const Scene& scene)
 	std::vector<std::vector<std::tuple<std::tuple<int, int>, Color>>> acc((height / rowsPer) + 1);
 	while(rowsLeft - rowsPer > 0)
 	{
+		std::cerr << rowsLeft << ' ' << "Rows Left..." << std::endl;
+		std::cerr << "batch#:"  << ' ' << batchNum  << std::endl;
 		acc[batchNum] = scanBatch(scene, cam, {rowsLeft - rowsPer, 0}, {rowsLeft, width}, {height, width});
 		rowsLeft = rowsLeft - rowsPer; 
 		batchNum++;
 	}
 	if(rowsLeft > 0)
 	{
+		std::cerr << 1 << ' ' << "Rows Left..." << std::endl;
 		acc[batchNum] = scanBatch(scene, cam, {0, 0}, {rowsLeft, width}, {height, width});
 	}
 
