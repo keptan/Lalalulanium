@@ -103,6 +103,100 @@ class Triangle : public Hittable
 		}
 };
 
+class Sculpture : public Hittable 
+{
+
+	public:  
+		std::vector<Triangle> triangles; 
+		Point a, b;
+
+		Sculpture (const  std::vector<Triangle>& t)
+			: triangles(t)
+		{
+			calculateBounds();
+		}
+
+		void calculateBounds (void)
+		{
+			if(!triangles.size()) return; 
+
+			float minx = triangles[0].a.x(); 
+			float miny = triangles[0].a.y(); 
+			float minz = triangles[0].a.z(); 
+
+			float maxx = triangles[0].a.x(); 
+			float maxy = triangles[0].a.y(); 
+			float maxz = triangles[0].a.z(); 
+
+			for(const auto& t : triangles)
+			{
+				const auto test = [&](const auto ti)
+				{
+					std::cerr << ti.x() << std::endl;
+					if(ti.x() > maxx) maxx = ti.x();
+					if(ti.y() > maxy) maxy = ti.y();
+					if(ti.z() > maxz) maxz = ti.z();
+
+					if(ti.x() < minx) minx = ti.x();
+					if(ti.y() < miny) miny = ti.y();
+					if(ti.z() < minz) minz = ti.z();
+
+				};
+
+				test(t.a);
+				test(t.b);
+				test(t.c);
+			}
+			
+			std::cerr << minx << ' ' << miny << ' ' << minz << std::endl;
+			std::cerr << maxx << ' ' << maxy << ' ' << maxz << std::endl;
+
+			a = Point(minx, miny, minz); 
+			b = Point(maxx, maxy, maxz);
+		}
+
+
+		bool hitBound
+		(const Ray& r, float tmin, float tmax) const
+		{
+			const float dir[] =    {std::get<0>(r.direction().res), std::get<1>(r.direction().res),std::get<2>(r.direction().res)};
+			const float origin[] = {std::get<0>(r.origin().res), std::get<1>(r.origin().res),std::get<2>(r.origin().res)};
+
+			const float min[] = {std::get<0>(a.res), std::get<1>(a.res), std::get<2>(a.res)};
+			const float max[] = {std::get<0>(b.res), std::get<1>(b.res), std::get<2>(b.res)};
+
+			for(int a = 0; a < 3; a++)
+			{
+				float invD = 1.0f / dir[a];
+				float t0 = (min[a] - origin[a]) * invD; 
+				float t1 = (max[a] - origin[a]) * invD; 
+
+				if(invD < 0.0f) std::swap(t0, t1); 
+
+				tmin = t0 > tmin ? t0 : tmin; 
+				tmax = t1 < tmax ? t1 : tmax; 
+
+				if (tmax <= tmin) return false; 
+			}
+
+			return true; 
+		}
+
+		virtual std::optional<Hit> hit 
+		(const Ray& r, float t_min, float t_max) const final
+		{
+			if(! hitBound(r, t_min, t_max)) return std::nullopt; 
+
+			for(const auto& t : triangles)
+			{
+				const auto hit = t.hit(r, t_min, t_max); 
+				if(hit) return hit; 
+			}
+
+			return std::nullopt;
+		}
+};
+
 
 
 

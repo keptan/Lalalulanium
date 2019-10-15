@@ -64,10 +64,10 @@ std::vector<Point> generateVerts (const std::string& filename)
 	return acc;
 }
 
-std::vector<std::unique_ptr<Hittable>> generateTriangles (const std::string v, const std::string& t)
+std::vector<Triangle> generateTriangles (const std::string v, const std::string& t)
 {
 	const auto verts = generateVerts(v);
-	std::vector<std::unique_ptr<Hittable>> acc; 
+	std::vector<Triangle> acc; 
 	std::ifstream infile(t); 
 
 
@@ -85,7 +85,7 @@ std::vector<std::unique_ptr<Hittable>> generateTriangles (const std::string v, c
 			record.push_back(s); 
 		}
 
-		acc.emplace_back( std::make_unique<Triangle>( verts[std::stoi(record[0])],verts[std::stoi(record[1])],verts[std::stoi(record[2])]));
+		acc.emplace_back(verts[std::stoi(record[0])],verts[std::stoi(record[1])],verts[std::stoi(record[2])]);
 	}
 
 	return acc;
@@ -241,7 +241,7 @@ int main (void)
 //	imperativePPM();
 //	outputPPM();
 	Scene scene; 
-	scene.actors = generateTriangles("verts.v", "triangles.v");
+	scene.actors.emplace_back(std::make_unique<Sculpture>(generateTriangles("verts.v", "triangles.v")));
 	scene.actors.emplace_back(std::make_unique<Sphere>(Point(0, -100.5, -1), 100));
 	scene.actors.emplace_back(std::make_unique<Sphere>(Point(-2, 0, -1), 0.5));
 	//scene.actors.emplace_back(std::make_unique<Sphere>(Point(0, 0, -1), 0.5));
