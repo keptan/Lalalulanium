@@ -4,12 +4,15 @@
 #include <cstddef>
 #include <optional>
 
+class Material;
+
 struct Hit 
 {
 	//time hit 
 	float t; 
 	Point p; 
 	Point normal; 
+	std::shared_ptr<Material> mat;
 }; 
 
 class Hittable 
@@ -25,12 +28,13 @@ class Sphere : public Hittable
 	public: 
 		Point center; 
 		float radius; 
+		std::shared_ptr<Material> mat;
 
 		Sphere (void) 
 		{}
 
-		Sphere (const Point c, const float r) 
-			: center (c), radius (r)
+		Sphere (const Point c, const float r, std::shared_ptr<Material> m) 
+			: center (c), radius (r), mat(m)
 		{}
 
 		virtual std::optional<Hit> hit 
@@ -50,7 +54,7 @@ class Sphere : public Hittable
 				if( temp < t_max && temp > t_min) 
 				{
 					return Hit {temp, r.point_at_t(temp), 
-								(r.point_at_t(temp) - center) / radius};
+								(r.point_at_t(temp) - center) / radius, mat};
 				}
 			}
 
@@ -63,12 +67,13 @@ class Triangle : public Hittable
 
 	public:  
 		Point a, b, c;  
+		std::shared_ptr<Material> mat;
 
 		Triangle (void) 
 		{}
 
-		Triangle(const Point a, const Point b, const Point c) 
-			: a(a), b(b), c(c) 
+		Triangle(const Point a, const Point b, const Point c, std::shared_ptr<Material> m) 
+			: a(a), b(b), c(c), mat(m)
 		{}
 
 		virtual std::optional<Hit> hit 
@@ -96,7 +101,7 @@ class Triangle : public Hittable
 			float t = f * edge2.dot(q); 
 			if( t > t_min && t < t_max) 
 			{
-				return Hit {t, r.point_at_t(t), edge1.cross(edge2)};
+				return Hit {t, r.point_at_t(t), edge1.cross(edge2), mat};
 			}
 
 			return std::nullopt; 
