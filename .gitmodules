@@ -1,3 +1,6 @@
 [submodule "fun"]
 	path = fun
 	url = https://github.com/keptan/fun
+[submodule "nfun"]
+	path = nfun
+	url = https://github.com/keptan/nfun
