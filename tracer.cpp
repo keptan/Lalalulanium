@@ -208,13 +208,12 @@ std::vector<std::tuple<std::tuple<int, int>, Color>> scanBatch (const Scene& sce
 auto cameraBatch (const Scene& scene) 
 {
 
-	const int width  = 640;
-	const int height = 480; 
+	const int width  = 200;
+	const int height = 100; 
 	const int samples = 500; 
 	const Camera cam(Point(0, 0, 0));
 
 	const int rowsPer = std::min(height / 8, (height / ((height * width) / 10000)));
-	std::cerr << rowsPer << std::endl;
 
 	int rowsLeft = height; 
 	int batchNum = 0;
@@ -225,7 +224,6 @@ auto cameraBatch (const Scene& scene)
 	std::vector<std::future<std::vector<std::tuple<std::tuple<int, int>, Color>>>> acc((height / rowsPer + 1));
 	while(rowsLeft - rowsPer > 0)
 	{
-		std::cerr << "batch#:"  << ' ' << batchNum  << std::endl;
 
 		const auto run = ([=, &scene, &cam]()
 				{
@@ -241,7 +239,6 @@ auto cameraBatch (const Scene& scene)
 	}
 	if(rowsLeft > 0)
 	{
-		std::cerr << 1 << ' ' << "Rows Left..." << std::endl;
 		acc[batchNum] = manDad.addTask([&](){return scanBatch(scene, cam, {0, 0}, {rowsLeft, width}, {height, width});});
 	}
 
@@ -269,14 +266,13 @@ auto cameraBatch (const Scene& scene)
 
 int main (void)
 {
-
-	std::shared_ptr<Material> red = std::make_shared<Lambertian>(Color(1.0, 0.5, 0.5));
+	std::shared_ptr<Material> red = std::make_shared<Lambertian>(Color(0.8, 0.5, 0.5));
 	std::shared_ptr<Material> green = std::make_shared<Lambertian>(Color(0.52, 1.0, 0.5));
 	std::shared_ptr<Material> gray = std::make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
 //	imperativePPM();
 //	outputPPM();
 	Scene scene; 
-	scene.actors.emplace_back(std::make_unique<Sculpture>(generateTriangles("verts.v", "triangles.v")));
+	scene.actors.emplace_back(buildSculpture(generateTriangles("verts.v", "triangles.v")));
 //	scene.actors = generateTrianglesPtr("verts.v", "triangles.v");
 	scene.actors.emplace_back(std::make_unique<Sphere>(Point(0, -100.5, -1), 100, gray));
 	scene.actors.emplace_back(std::make_unique<Sphere>(Point(-2, 0, -1), 0.5, red));
