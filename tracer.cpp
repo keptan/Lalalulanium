@@ -208,8 +208,8 @@ std::vector<std::tuple<std::tuple<int, int>, Color>> scanBatch (const Scene& sce
 auto cameraBatch (const Scene& scene) 
 {
 
-	const int width  = 200;
-	const int height = 100; 
+	const int width  = 640;
+	const int height = 480; 
 	const int samples = 500; 
 	const Camera cam(Point(0, 0, 0));
 
