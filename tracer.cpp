@@ -18,20 +18,6 @@
 #include <fstream> 
 #include <memory>
 
-
-float sphereCollision (const Point& center, float radius, const Ray& r)
-{
-	Point oc = r.origin() - center; 
-	float a = r.direction().dot(r.direction()); 
-	float b = 2.0 * oc.dot(r.direction()); 
-	float c = oc.dot(oc) - radius * radius; 
-	float disc = b*b - 4*a*c;
-
-	if(disc < 0) return -1.0;
-
-	return (-b - std::sqrt(disc)) / (2.0 * a);
-}
-
 std::vector<Point> generateVerts (const std::string& filename)
 {
 	std::vector<Point> acc; 
