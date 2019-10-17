@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <optional>
 #include <algorithm>
+#include <map>
 
 class Material;
 
@@ -193,61 +194,6 @@ class Sculpture : public Hittable
 		}
 };
 
-std::unique_ptr<Hittable> recursiveSculpture ( const std::vector<Triangle>& triangles)
-{
-			float minx = triangles[0].a.x(); 
-			float miny = triangles[0].a.y(); 
-			float minz = triangles[0].a.z(); 
-
-			float maxx = triangles[0].a.x(); 
-			float maxy = triangles[0].a.y(); 
-			float maxz = triangles[0].a.z(); 
-
-			for(const auto& t : triangles)
-			{
-				const auto test = [&](const auto ti)
-				{
-					if(ti.x() > maxx) maxx = ti.x();
-					if(ti.y() > maxy) maxy = ti.y();
-					if(ti.z() > maxz) maxz = ti.z();
-
-					if(ti.x() < minx) minx = ti.x();
-					if(ti.y() < miny) miny = ti.y();
-					if(ti.z() < minz) minz = ti.z();
-
-				};
-
-				test(t.a);
-				test(t.b);
-				test(t.c);
-			}
-			
-			float halfx = minx + (maxx - minx)/2;
-			float halfy = miny + (maxy - miny)/2;
-			float halfz = minz + (maxz - minz)/2;
-
-
-			std::vector<Triangle> aboveTriangles;
-			std::vector<Triangle> belowTriangles;
-			for(const auto& t : triangles)
-			{
-				float lminz = t.a.z();
-				lminz = t.b.z() < lminz ? t.b.z() : lminz;
-				lminz = t.c.z() < lminz ? t.c.z() : lminz;
-
-				if(minz >= halfz) 
-				{
-					aboveTriangles.push_back(t);
-					continue;
-				}
-				belowTriangles.push_back(t);
-			}
-
-			const auto lower = std::make_shared<RecBound>(Point(minx, miny, minz), Point(minx, miny, halfz), std::vector<std::shared_ptr<Hittable>>(1, std::make_shared<Sculpture>(belowTriangles)));
-			const auto upper = std::make_shared<RecBound>(Point(minx, miny, halfz), Point(minx, miny, maxz), std::vector<std::shared_ptr<Hittable>>(1, std::make_shared<Sculpture>(aboveTriangles)));
-			const std::vector<std::shared_ptr<Hittable>> nest = {lower, upper};
-			return std::make_unique<RecBound>( Point(minx, miny, minz), Point(maxx, maxy, maxz), nest);
-}
 std::tuple<Point, Point> triangleBounds (const std::vector<Triangle>& triangles)
 {
 	float minx = triangles[0].a.x(); 
@@ -283,7 +229,7 @@ std::tuple<Point, Point> triangleBounds (const std::vector<Triangle>& triangles)
 
 std::unique_ptr<Hittable> buildSculpture (const std::vector<Triangle>& triangles, int depth = 0)
 {
-	if (depth > 5 || triangles.size() < 25) return std::make_unique<Sculpture>(triangles);
+	if (depth > 10 || triangles.size() < 10) return std::make_unique<Sculpture>(triangles);
 
 	const auto [low, high] = triangleBounds(triangles);
 	const auto getMid = [](const auto a, const auto b){ return a + (b - a)/2;};
@@ -302,14 +248,12 @@ std::unique_ptr<Hittable> buildSculpture (const std::vector<Triangle>& triangles
 		const auto tBound = [](const auto t){ return Point( std::max(t.a.x(), std::max(t.b.x(), t.c.x())), std::max(t.a.y(), std::max(t.b.y(), t.c.y())),std::max(t.a.z(), std::max(t.b.z(), t.c.z())));};
 		const auto big = tBound(t);
 
-
 		//what if we just calculated the  distance to the center of each of these bounds or something LMAO!
 		const bool up = big.z() >= mid.z(); 
 		const bool far = big.y() >= mid.y();
 		const bool right = big.x() >= mid.x();
 
-		//std::cout << up << ' ' << far << ' ' << right << std::endl;
-
+		//essentially un unrolled binary search to stick the triangle into the correct sub-rect
 		if(up)
 		{
 			if(far)
@@ -330,7 +274,6 @@ std::unique_ptr<Hittable> buildSculpture (const std::vector<Triangle>& triangles
 			b1.push_back(t);
 			continue;
 		}
-
 			if(far)
 			{
 				if(right) 
