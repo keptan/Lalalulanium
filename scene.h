@@ -95,10 +95,9 @@ class Scene
 		int rowsLeft = height; 
 		int batchNum = 0;
 
+		FutureDad manDad(std::thread::hardware_concurrency());
 
-		FutureDad manDad(8);
-
-		std::vector<std::future<std::vector<std::tuple<std::tuple<int, int>, Color>>>> acc((height / rowsPer + 1));
+		std::vector<std::future<std::vector<std::tuple<std::tuple<int, int>, Color>>>> acc((height / rowsPer + (rowsLeft % rowsPer ? 1 : 0)));
 		while(rowsLeft - rowsPer > 0)
 		{
 
