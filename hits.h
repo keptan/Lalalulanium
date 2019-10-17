@@ -293,9 +293,6 @@ std::unique_ptr<Hittable> buildSculpture (const std::vector<Triangle>& triangles
 			continue;
 	}
 
-
-	std::cerr << a1.size() << ' ' << b1.size() << ' ' << c1.size() << ' ' << d1.size() << std::endl;
-	std::cerr << a2.size() << ' ' << b2.size() << ' ' << c2.size() << ' ' << d2.size() << std::endl;
 	std::vector<std::shared_ptr<Hittable>> nest;
 	nest.push_back(buildSculpture(a1, depth + 1));
 	nest.push_back(buildSculpture(b1, depth + 1));
