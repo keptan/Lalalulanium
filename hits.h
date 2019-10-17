@@ -235,7 +235,6 @@ std::unique_ptr<Hittable> buildSculpture (const std::vector<Triangle>& triangles
 	const auto getMid = [](const auto a, const auto b){ return a + (b - a)/2;};
 	const Point mid(getMid(low.x(), high.x()),getMid(low.z(), high.z()),getMid(low.z(), high.z()));
 
-	std::cerr << low.x() << ' ' << mid.x() << ' ' << high.x() << std::endl;
 
 	std::vector<Triangle> a1, b1, c1, d1, a2, b2, c2, d2;
 	for(const auto& t : triangles)
