@@ -3,7 +3,7 @@ Pure functional ray tracer using FUNLIB!
 
 
 RENDERS TRIANGLES AND HAS AN ACCELERATION STRUCTURE (RECURSIVE BOUNDING BOXES FOR MESHES OF TRIANGLES (DID I MENTION IT CAN RENDER TRIANGLES))
-multicored using [nfun](https://i.4cdn.org/k/1572992950430.jpg) lib too!
+multicored using [nfun](https://github.com/keptan/nfun) lib too!
 
 ![](https://raw.githubusercontent.com/keptan/Lalalulanium/master/image.png)
 
